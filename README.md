@@ -1,5 +1,7 @@
 # Excel template automation demo
 
+[![tests](https://github.com/stevebanza/template-automation-demo/actions/workflows/ci.yml/badge.svg)](https://github.com/stevebanza/template-automation-demo/actions/workflows/ci.yml)
+
 Automating a multi-year Excel survey template cycle in Python: roll the template forward, prefill it, produce language versions, validate country submissions, return review reports and consolidate everything into a release database.
 
 > **Synthetic data only.** Countries (Arcadia, Borealis, …), figures and templates are invented for this demo. No client code or data is included, and the repository is not affiliated with any organisation.

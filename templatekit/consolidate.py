@@ -16,6 +16,8 @@ from .validate import Result
 
 PRECEDENCE = {"country": 0, "mined": 1}
 RETURNED = "Returned to country"
+OBS_COLUMNS = ["country_code", "country_name", "year", "variable", "value", "source", "status",
+               "submission_file", "sha256"]
 
 
 def is_loaded(res: Result) -> bool:
@@ -29,7 +31,7 @@ def flatten(res: Result, source: str) -> pd.DataFrame:
              "variable": c, "value": v, "source": source, "status": res.status,
              "submission_file": res.file, "sha256": res.sha256}
             for (c, y), v in res.values.items() if v is not None]
-    return pd.DataFrame(rows)
+    return pd.DataFrame(rows, columns=OBS_COLUMNS)
 
 
 def consolidate(country: list[Result], mined: list[Result], previous: pd.DataFrame,
@@ -42,7 +44,10 @@ def consolidate(country: list[Result], mined: list[Result], previous: pd.DataFra
     out_dir.mkdir(parents=True, exist_ok=True)
     frames = [flatten(r, src) for src, rs in (("country", country), ("mined", mined))
               for r in rs if is_loaded(r)]
-    obs = pd.concat(frames, ignore_index=True)
+    if frames:
+        obs = pd.concat(frames, ignore_index=True)
+    else:  # everything was returned: an empty release, with the usual columns and types
+        obs = pd.DataFrame(columns=OBS_COLUMNS).astype({"year": "int64", "value": "float64"})
     obs["_p"] = obs.source.map(PRECEDENCE)
     obs = (obs.sort_values("_p").drop_duplicates(["country_code", "year", "variable"])
               .drop(columns="_p").sort_values(["country_code", "variable", "year"]))
