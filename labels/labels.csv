@@ -1,0 +1,15 @@
+code,en,fr,es
+_header_variable,Variable,Variable,Variable
+E_G1,"Enrolment, primary grade 1, both sexes","Effectifs, primaire 1re année, deux sexes","Matrícula, primaria grado 1, ambos sexos"
+E_G2,"Enrolment, primary grade 2, both sexes","Effectifs, primaire 2e année, deux sexes","Matrícula, primaria grado 2, ambos sexos"
+E_G3,"Enrolment, primary grade 3, both sexes","Effectifs, primaire 3e année, deux sexes","Matrícula, primaria grado 3, ambos sexos"
+E_G4,"Enrolment, primary grade 4, both sexes","Effectifs, primaire 4e année, deux sexes","Matrícula, primaria grado 4, ambos sexos"
+E_G5,"Enrolment, primary grade 5, both sexes","Effectifs, primaire 5e année, deux sexes","Matrícula, primaria grado 5, ambos sexos"
+E_G6,"Enrolment, primary grade 6, both sexes","Effectifs, primaire 6e année, deux sexes","Matrícula, primaria grado 6, ambos sexos"
+E_PRI_M,"Enrolment, primary, male","Effectifs, primaire, garçons","Matrícula, primaria, hombres"
+E_PRI_F,"Enrolment, primary, female","Effectifs, primaire, filles","Matrícula, primaria, mujeres"
+E_PRI_T,"Enrolment, primary, both sexes","Effectifs, primaire, deux sexes","Matrícula, primaria, ambos sexos"
+POP_PRI,Population of official primary school age,Population d'âge officiel du primaire,Población en edad oficial de primaria
+TCH_PRI,"Teachers, primary","Enseignants, primaire","Docentes, primaria"
+GER_PRI,"Gross enrolment ratio, primary (%)","Taux brut de scolarisation, primaire (%)","Tasa bruta de matrícula, primaria (%)"
+PTR_PRI,"Pupil-teacher ratio, primary","Ratio élèves/enseignant, primaire","Relación alumnos/docente, primaria"

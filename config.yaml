@@ -1,0 +1,22 @@
+# Pipeline configuration. Change the years here to run a new cycle.
+first_year: 2019
+previous_survey_year: 2024     # the cycle whose master template we start from
+survey_year: 2025              # the cycle being prepared
+seed: 42                       # synthetic data only
+
+languages: [fr, es]
+rules: rules/validation_rules.yaml
+mined_rules: [STR01, NNG01, FRM01]   # lighter checks for mined templates
+labels: labels/labels.csv
+
+# Fictional countries. `scenario` controls the simulated submission only.
+countries:
+  - {code: ARC, name: Arcadia,  scenario: clean}
+  - {code: BOR, name: Borealis, scenario: sex_mismatch}
+  - {code: COR, name: Corvina,  scenario: formula_overwritten}
+  - {code: DAL, name: Dalmora,  scenario: cohort_jump}
+  - {code: EST, name: Estoria,  scenario: missing_and_jump}
+
+# Countries with no submission: data compiled from secondary sources.
+mined_countries:
+  - {code: FEN, name: Fennland}

@@ -1,0 +1,75 @@
+# Validation rules applied to every submitted template.
+#
+# Each rule has: id, type, severity, its parameters, and a plain-language message
+# shown to the country in the review report. Placeholders in {braces} are filled
+# by the engine ({label}, {year}, {cell}, {observed}, {expected} and the rule's
+# own parameters).
+#
+# Severity:  blocking   -> the file is returned to the country
+#            to_confirm -> accepted, but the country must confirm or explain
+#            info       -> logged only (e.g. revisions to past years)
+#
+# To add a check of an existing type, copy a block and change its parameters.
+# No code change is needed.
+
+rules:
+  - id: STR01
+    type: structure
+    severity: blocking
+    message: "The template structure was changed ({detail}). Please enter data in the original template."
+
+  - id: REQ01
+    type: required
+    severity: blocking
+    message: "{label} is missing or not a number for {year} (found: {observed}). Enter a value, or 0 if there is none."
+
+  - id: NNG01
+    type: non_negative
+    severity: blocking
+    message: "{label} for {year} is negative ({observed}). Values must be 0 or more."
+
+  - id: FRM01
+    type: formula_integrity
+    severity: blocking
+    message: "The calculated cell {cell} ({label}, {year}) was overwritten or edited. Expected formula {expected}, found {observed}. Please restore the original template cell."
+
+  - id: IND01
+    type: indicator_recalc
+    severity: blocking
+    tolerance_pct: 0.5
+    message: "{label} for {year} was typed as {observed}, but the inputs give {expected}."
+
+  - id: SUM01
+    type: sum_equals
+    severity: blocking
+    target: E_PRI_T
+    parts: [E_PRI_M, E_PRI_F]
+    tolerance: 0
+    message: "Male + female enrolment ({observed}) does not equal total primary enrolment ({expected}) for {year}."
+
+  - id: RNG01
+    type: range
+    severity: to_confirm
+    variable: GER_PRI
+    min: 70
+    max: 140
+    message: "The gross enrolment ratio is {observed}% for {year}, outside the usual {min}-{max}% range. Please confirm the enrolment and population figures."
+
+  - id: YOY01
+    type: yoy_change
+    severity: to_confirm
+    variables: [E_PRI_T, POP_PRI, TCH_PRI]
+    max_pct: 15
+    message: "{label} changed by {pct}% between {prev_year} and {year} (threshold: ±{max_pct}%). Please confirm or explain."
+
+  - id: COH01
+    type: cohort
+    severity: to_confirm
+    grades: [E_G1, E_G2, E_G3, E_G4, E_G5, E_G6]
+    max_ratio: 1.10
+    message: "Grade {grade_to} enrolment in {year} ({observed}) is {ratio} times grade {grade_from} enrolment in {prev_year} ({expected}). A cohort rarely grows by more than {max_pct}% from one grade to the next; please check."
+
+  - id: REV01
+    type: revision
+    severity: info
+    message: "{label} for {year} differs from the previously published value ({expected} -> {observed}). Revision recorded."
