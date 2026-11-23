@@ -17,7 +17,7 @@ Before starting: run `python run_pipeline.py all` so `output/` is fresh, and kee
 | 5–7 | `rules/validation_rules.yaml`, then `templatekit/validate.py`: `validate_file()` | Rules are data (id, type, severity, message). The engine implements rule *types*. Structure is checked first and stops the run if broken. |
 | 7–8 | A review report, e.g. `output/reports/COR_2025_submission_review.html` | What the country sees: the cell, the rule, a plain-language fix. COR typed a number over the `SUM` formula (FRM01 + IND01). |
 | 8–9 | `templatekit/consolidate.py` | Returned files are excluded, country data beats mined data, revisions to past years are reported. One SQLite file plus CSV exports. |
-| 9–10 | `tests/test_pipeline.py`, `.github/workflows/ci.yml` | One end-to-end test per scenario; CI runs ruff, the tests and the full pipeline on every push. |
+| 9–10 | `tests/`, `.github/workflows/ci.yml` | One end-to-end test per scenario, plus damaged-file tests (corrupt, not Excel, password-protected, missing sheets); CI runs ruff, the tests and the full pipeline on every push. |
 
 ## What each module does
 
@@ -86,13 +86,15 @@ recomputation (`compute()`) checks indicators without opening Excel and catches 
 formulas (IND01). Results were checked against a LibreOffice recalculation.
 
 **What happens with a damaged file?**
-Each file is fingerprinted (SHA-256) and logged with its result. Structural problems (rows
-moved, year columns missing, no country code) become an STR01 flag and the file is returned;
-the run continues for other countries. Known gap: a file that is not a readable workbook, or
-has lost its `Data` or `Metadata` sheet, currently raises an error. The fix is a `try` around
-the load that turns it into an STR01 flag.
+Its bytes are fingerprinted (SHA-256) before it is opened. If it cannot be opened (corrupt,
+not really .xlsx, password-protected) or has lost its `Data` or `Metadata` sheet,
+`open_template()` returns the reason instead of raising. The same applies to rows moved or
+year columns missing. Each becomes a blocking STR01 flag with a plain-language explanation,
+the file gets a "Returned to country" review report, the technical error goes into
+`qc_log.csv`, and the run continues for the other countries. The Streamlit checker shows the
+same flag. `tests/test_damaged_files.py` covers each case.
 
 **What would you improve next?**
-A rule registry (above), unreadable files reported as STR01 (above), version numbering that increments within a cycle (`bump_version`
+A rule registry (above), version numbering that increments within a cycle (`bump_version`
 currently always resets to `<year>.1`), a QC log in the database, and an R reader for the
 release so analysts working in R use the same tables.

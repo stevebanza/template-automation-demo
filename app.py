@@ -27,7 +27,7 @@ if up:
         res = validate_file(path, rules, prev)
         report = submission_report(res, Path(tmp) / f"{path.stem}_review.html").read_bytes()
 
-    st.subheader(f"{res.country_name} ({res.country_code}), survey year {res.survey_year}")
+    st.subheader(res.title)
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("Status", res.status)
     c2.metric("Must fix", res.count("blocking"))

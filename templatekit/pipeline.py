@@ -139,7 +139,7 @@ class Pipeline:
         for f in sorted(self.p("submissions", "x").parent.glob("*.xlsx")):
             res = validate_file(f, rules, prev)
             submission_report(res, self.p("reports", f"{f.stem}_review.html"))
-            self.log("validate", res)
+            self.log("validate", res, note=res.error)
             results.append(res)
         self.results = results
         return results
@@ -151,7 +151,7 @@ class Pipeline:
         mined = []
         for f in sorted(self.p("mined", "x").parent.glob("*.xlsx")):
             res = validate_file(f, rules)
-            self.log("validate-mined", res)
+            self.log("validate-mined", res, note=res.error)
             mined.append(res)
         index_report([(r, f"{Path(r.file).stem}_review.html") for r in results] +
                      [(r, "") for r in mined],

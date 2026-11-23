@@ -12,7 +12,7 @@ Automating a multi-year Excel survey template cycle in Python: roll the template
 python -m venv .venv && source .venv/bin/activate      # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 python run_pipeline.py all                              # whole cycle, about 2 seconds
-pytest -q                                               # 10 end-to-end tests
+pytest -q                                               # end-to-end and damaged-file tests
 streamlit run app.py                                    # optional: check one file in a browser
 ```
 
@@ -38,14 +38,14 @@ Each step can be run on its own (`python run_pipeline.py validate`). A new cycle
 - **Formulas are regenerated, never copied.** The roll-forward rebuilds each formula from its pattern for the new column, then diffs the whole workbook against the previous version. Any change other than the new year stops the run.
 - **Python mirrors Excel.** Indicators are recomputed in Python from the inputs. This catches formulas that were overwritten with typed values, without opening Excel. (Checked against LibreOffice recalculation: identical results.)
 - **Rules are data, not code.** Each check has an id, a severity and a plain-language message in YAML. Statisticians can add or tune checks without touching Python.
-- **Tolerant on input, strict on output.** Submissions are fingerprinted (SHA-256) and logged before checking. Structural damage is reported rather than crashing the run. Only accepted data reaches the release.
+- **Tolerant on input, strict on output.** Submissions are fingerprinted (SHA-256) before they are opened, and every result is logged in `qc_log.csv`. A file that cannot be opened (corrupt, not .xlsx, password-protected), has lost a sheet, or has moved rows or year columns is returned to the country with a structural flag rather than crashing the run. Only accepted data reaches the release.
 - **Severity drives the decision.** *Must fix* → returned to the country. *Please confirm* → accepted with queries. *For information* → logged (e.g. revisions to past years).
 
 ## Validation rules included
 
 | Id | Type | Severity | Checks |
 | --- | --- | --- | --- |
-| STR01 | structure | must fix | Rows, year columns and metadata match the master |
+| STR01 | structure | must fix | File opens; sheets, rows, year columns and metadata match the master |
 | REQ01 | required | must fix | No blank or text values in survey-year inputs |
 | NNG01 | non_negative | must fix | No negative values |
 | FRM01 | formula_integrity | must fix | Calculated cells still hold the original formula |

@@ -47,7 +47,7 @@ def submission_report(res: Result, path: Path) -> Path:
         for f in sorted(res.flags, key=lambda f: SEVERITY_ORDER.index(f.severity))
     ) or "<tr><td colspan='5'>No issues found.</td></tr>"
     body = f"""
-<h1>Data review: {e(res.country_name)} ({e(res.country_code)}), survey year {res.survey_year}</h1>
+<h1>Data review: {e(res.title)}</h1>
 <p class='sub'>File {e(res.file)} · template version {e(res.version)} · language {e(res.language)}
 · SHA-256 {res.sha256[:12]}…</p>
 <p>Status: <span class='pill {STATUS_CLASS[st]}'>{st}</span></p>
@@ -71,7 +71,8 @@ def index_report(results: list[tuple[Result, str]], path: Path, title: str) -> P
     e = html.escape
 
     def name(r, link):
-        return f"<a href='{e(link)}'>{e(r.country_name)}</a>" if link else e(r.country_name)
+        label = e(r.country_name or r.file)
+        return f"<a href='{e(link)}'>{label}</a>" if link else label
 
     rows = "".join(
         f"<tr><td>{name(r, link)}</td><td>{e(r.country_code)}</td>"
