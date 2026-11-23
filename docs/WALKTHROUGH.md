@@ -1,7 +1,8 @@
 # Code walkthrough (10 minutes)
 
 A guided tour of the repository for a screen-share: what to open, in what order, what to say,
-and the questions it tends to raise. All data is synthetic.
+and the questions it tends to raise. All data is synthetic. For a slide overview of the same
+material, see [deck.pdf](deck.pdf).
 
 Before starting: run `python run_pipeline.py all` so `output/` is fresh, and keep
 `output/reports/index.html` open in a browser tab.
@@ -15,7 +16,7 @@ Before starting: run `python run_pipeline.py all` so `output/` is fresh, and kee
 | 2–3.5 | `templatekit/spec.py` | The single source of truth: `VARIABLES` (rows, input vs formula), `ROW`, `formula_for()` (Excel formula for any column) and `compute()` (the same formula in Python). |
 | 3.5–5 | `templatekit/workbook.py`: `write_year_column()`, `diff_rollforward()` | Roll-forward regenerates formulas from the spec, then a cell-by-cell diff classifies every change as expected or unexpected. Show `output/checks/rollforward_diff.csv`. |
 | 5–7 | `rules/validation_rules.yaml`, then `templatekit/validate.py`: `validate_file()` | Rules are data (id, type, severity, message). The engine implements rule *types*. Structure is checked first and stops the run if broken. |
-| 7–8 | A review report, e.g. `output/reports/COR_2025_submission_review.html` | What the country sees: the cell, the rule, a plain-language fix. COR typed a number over the `SUM` formula (FRM01 + IND01). |
+| 7–8 | A review report, e.g. `output/reports/COR_2025_submission_review.html` | What the country sees: the cell, the rule, a plain-language fix. COR typed a number over the `SUM` formula: FRM01, plus SUM01 because male + female no longer equals the typed total. |
 | 8–9 | `templatekit/consolidate.py` | Returned files are excluded, country data beats mined data, revisions to past years are reported. One SQLite file plus CSV exports. |
 | 9–10 | `tests/`, `.github/workflows/ci.yml` | One end-to-end test per scenario, plus damaged-file tests (corrupt, not Excel, password-protected, missing sheets); CI runs ruff, the tests and the full pipeline on every push. |
 
@@ -82,8 +83,10 @@ between two releases.
 
 **Why recompute indicators in Python?**
 openpyxl reads formulas, not results, and files saved by scripts carry no cached values. Python
-recomputation (`compute()`) checks indicators without opening Excel and catches typed-over
-formulas (IND01). Results were checked against a LibreOffice recalculation.
+recomputation (`compute()`) checks indicators without opening Excel. An overwritten formula is
+caught by comparing it with the expected one (FRM01); the recomputed value then shows whether
+the typed number is also wrong (IND01, 0.5% tolerance). Results were checked against a
+LibreOffice recalculation.
 
 **What happens with a damaged file?**
 Its bytes are fingerprinted (SHA-256) before it is opened. If it cannot be opened (corrupt,

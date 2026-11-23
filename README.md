@@ -6,6 +6,8 @@ Automating a multi-year Excel survey template cycle in Python: roll the template
 
 > **Synthetic data only.** Countries (Arcadia, Borealis, …), figures and templates are invented for this demo. No client code or data is included, and the repository is not affiliated with any organisation.
 
+**Documentation:** [slide deck (PDF, 13 slides)](docs/deck.pdf) · [10-minute code walkthrough](docs/WALKTHROUGH.md)
+
 ![Submission status](docs/status_index.png)
 
 ## Quick start
@@ -38,7 +40,7 @@ Each step can be run on its own (`python run_pipeline.py validate`). A new cycle
 
 - **One layout specification.** `templatekit/spec.py` defines every row, formula and input once. Generation, roll-forward, validation and consolidation all read from it, so they cannot drift apart.
 - **Formulas are regenerated, never copied.** The roll-forward rebuilds each formula from its pattern for the new column, then diffs the whole workbook against the previous version. Any change other than the new year stops the run.
-- **Python mirrors Excel.** Indicators are recomputed in Python from the inputs. This catches formulas that were overwritten with typed values, without opening Excel. (Checked against LibreOffice recalculation: identical results.)
+- **Python mirrors Excel.** Indicators are recomputed in Python from the inputs, so typed values are checked without opening Excel; overwritten formulas are caught by comparison with the expected formula. (Checked against LibreOffice recalculation: identical results.)
 - **Rules are data, not code.** Each check has an id, a severity and a plain-language message in YAML. Statisticians can add or tune checks without touching Python.
 - **Tolerant on input, strict on output.** Submissions are fingerprinted (SHA-256) before they are opened, and every result is logged in `qc_log.csv`. A file that cannot be opened (corrupt, not .xlsx, password-protected), has lost a sheet, or has moved rows or year columns is returned to the country with a structural flag rather than crashing the run. Only accepted data reaches the release.
 - **Severity drives the decision.** *Must fix* → returned to the country. *Please confirm* → accepted with queries. *For information* → logged (e.g. revisions to past years).
