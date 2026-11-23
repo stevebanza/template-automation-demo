@@ -15,6 +15,12 @@ import pandas as pd
 from .validate import Result
 
 PRECEDENCE = {"country": 0, "mined": 1}
+RETURNED = "Returned to country"
+
+
+def is_loaded(res: Result) -> bool:
+    """Same rule for country and mined templates: anything returned stays out of the release."""
+    return res.status != RETURNED
 
 
 def flatten(res: Result, source: str) -> pd.DataFrame:
@@ -34,8 +40,8 @@ def consolidate(country: list[Result], mined: list[Result], previous: pd.DataFra
     and values that differ from `previous` are written to the revisions table.
     """
     out_dir.mkdir(parents=True, exist_ok=True)
-    loaded = [r for r in country if r.status != "Returned to country"]
-    frames = [flatten(r, "country") for r in loaded] + [flatten(r, "mined") for r in mined]
+    frames = [flatten(r, src) for src, rs in (("country", country), ("mined", mined))
+              for r in rs if is_loaded(r)]
     obs = pd.concat(frames, ignore_index=True)
     obs["_p"] = obs.source.map(PRECEDENCE)
     obs = (obs.sort_values("_p").drop_duplicates(["country_code", "year", "variable"])
@@ -46,7 +52,7 @@ def consolidate(country: list[Result], mined: list[Result], previous: pd.DataFra
         "file": r.file, "sha256": r.sha256, "country_code": r.country_code,
         "source": src, "status": r.status, "blocking": r.count("blocking"),
         "to_confirm": r.count("to_confirm"), "info": r.count("info"),
-        "loaded": src == "mined" or r.status != "Returned to country",
+        "loaded": is_loaded(r),
     } for src, rs in (("country", country), ("mined", mined)) for r in rs])
 
     merged = obs.merge(previous[["country_code", "year", "variable", "value"]],

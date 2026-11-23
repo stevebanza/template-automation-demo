@@ -1,5 +1,6 @@
 """Damaged submissions are returned to the country with STR01, never crash the run."""
 import csv
+import sqlite3
 from pathlib import Path
 
 import pytest
@@ -107,3 +108,23 @@ def test_batch_continues_and_logs_errors(tmp_path):
     assert summary["excluded"] == 5
     index = pl.p("reports", "index.html").read_text(encoding="utf-8")
     assert ">ZZA_2025_submission.xlsx</a>" in index  # no metadata: linked by file name
+
+
+def test_returned_mined_template_is_not_loaded(tmp_path):
+    pl = Pipeline(ROOT / "config.yaml", tmp_path)
+    for step in (pl.generate, pl.rollforward, pl.translate, pl.prefill, pl.simulate):
+        step()
+    mined = pl.p("mined", f"FEN_{pl.sy}_mined.xlsx")
+    wb = load_workbook(mined)
+    wb["Data"].delete_rows(3)  # a variable row removed: fails STR01, metadata intact
+    wb.save(mined)
+
+    summary = pl.consolidate()
+    assert summary["loaded"] == 2  # ARC and DAL only
+    assert summary["excluded"] == 4  # BOR, COR, EST and the mined FEN template
+    with sqlite3.connect(summary["db"]) as con:
+        countries = {r[0] for r in con.execute("SELECT DISTINCT country_code FROM observations")}
+        fen = con.execute("SELECT status, loaded, blocking FROM submissions "
+                          "WHERE country_code = 'FEN'").fetchall()
+    assert countries == {"ARC", "DAL"}
+    assert fen == [("Returned to country", 0, 1)]
